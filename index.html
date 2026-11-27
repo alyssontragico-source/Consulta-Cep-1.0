@@ -1,144 +1,570 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#123b63">
-<title>Consulta de Distância entre CEPs</title>
+<title>Consulta de Distâncias - CEP e Cidades</title>
 <style>
 :root{--navy:#123b63;--blue:#1769aa;--sky:#eaf4fb;--ink:#172b3a;--muted:#627384;--line:#d9e3eb;--bg:#f4f7fa;--green:#16794b;--red:#b42318}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 header{background:linear-gradient(120deg,#102f4e,#1769aa);color:white;padding:28px 18px}
-.wrap{max-width:1100px;margin:auto;padding:0 16px}h1{font-size:clamp(24px,4vw,34px);margin:0 0 5px}header p{margin:0;color:#e4f1fb}
-main{padding:22px 0 50px}.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 4px 18px #193b5510}
-h2{font-size:19px;margin:0 0 14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-label{display:block;font-weight:650;font-size:13px;margin-bottom:6px}input,textarea,select{width:100%;border:1px solid #bdccd8;border-radius:9px;padding:11px 12px;font:inherit;background:#fff;color:var(--ink)}
-textarea{min-height:130px;resize:vertical}.hint{font-size:12px;color:var(--muted);margin-top:5px}
-button{border:0;border-radius:9px;padding:11px 16px;background:var(--blue);color:white;font:600 14px inherit;cursor:pointer}
-button:disabled{opacity:.55;cursor:wait}.secondary{background:#eaf2f8;color:var(--navy);border:1px solid #cbdce9}.danger{background:#fff1f0;color:var(--red);border:1px solid #ffd1cc}
-.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.status{margin-top:12px;color:var(--muted);font-size:13px;white-space:pre-wrap}
-.result{overflow:auto}table{width:100%;border-collapse:collapse;min-width:700px}th,td{text-align:left;padding:10px 9px;border-bottom:1px solid var(--line);font-size:13px}th{background:#f0f6fa;color:#365166}
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}.kpi{background:var(--sky);border-radius:10px;padding:12px}.kpi b{display:block;font-size:22px;color:var(--navy)}.kpi span{font-size:12px;color:var(--muted)}
+.wrap{max-width:1100px;margin:auto;padding:0 16px}
+h1{font-size:clamp(24px,4vw,34px);margin:0 0 5px}
+header p{margin:0;color:#e4f1fb}
+main{padding:22px 0 50px}
+.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 4px 18px #193b5510}
+h2{font-size:19px;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+label{display:block;font-weight:650;font-size:13px;margin-bottom:6px}
+input,textarea,select{width:100%;border:1px solid #bdccd8;border-radius:9px;padding:11px 12px;font:inherit;background:#fff;color:var(--ink)}
+textarea{min-height:130px;resize:vertical}
+.hint{font-size:12px;color:var(--muted);margin-top:5px}
+button{border:0;border-radius:9px;padding:11px 16px;background:var(--blue);color:white;font:600 14px system-ui;cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}
+.secondary{background:#eaf2f8;color:var(--navy);border:1px solid #cbdce9}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
+.status{margin-top:12px;color:var(--muted);font-size:13px;white-space:pre-wrap}
+.result{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th,td{text-align:left;padding:10px 9px;border-bottom:1px solid var(--line);font-size:13px}
+th{background:#f0f6fa;color:#365166}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.kpi{background:var(--sky);border-radius:10px;padding:12px;overflow-wrap:anywhere}
+.kpi b{display:block;font-size:22px;color:var(--navy)}
+.kpi span{font-size:12px;color:var(--muted)}
 .pill{display:inline-block;border-radius:20px;padding:3px 8px;background:#e7f5ed;color:var(--green);font-size:11px;font-weight:700}
-.note{font-size:12px;color:var(--muted)}.error{color:var(--red)}.ok{color:var(--green)}
+.note{font-size:12px;color:var(--muted)}
+.error{color:var(--red)}
+.ok{color:var(--green)}
 footer{color:var(--muted);font-size:12px;text-align:center;padding:18px}
+.section-label{font-weight:700;color:var(--navy);margin:15px 0 8px}
 @media(max-width:650px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:1fr}.panel{padding:15px}}
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>Consulta de distância entre CEPs</h1><p>Distância rodoviária estimada, consulta individual e em lote.</p></div></header>
-<main class="wrap">
-<section class="panel">
-<h2>1. Consulta individual</h2>
-<div class="grid">
-<div><label for="origin">CEP de origem</label><input id="origin" inputmode="numeric" maxlength="9" placeholder="Ex.: 53400-000"></div>
-<div><label for="destination">CEP de destino</label><input id="destination" inputmode="numeric" maxlength="9" placeholder="Ex.: 50000-000"></div>
+<header>
+<div class="wrap">
+<h1>Consulta de distâncias</h1>
+<p>Distância rodoviária estimada por CEP ou entre cidades.</p>
 </div>
-<div class="actions"><button id="oneBtn" onclick="singleQuery()">Calcular distância</button><button class="secondary" onclick="clearOne()">Limpar</button></div>
+</header>
+
+<main class="wrap">
+
+<section class="panel">
+<h2>1. Consulta individual por CEP</h2>
+<div class="grid">
+<div>
+<label for="origin">CEP de origem</label>
+<input id="origin" inputmode="numeric" maxlength="9" placeholder="Ex.: 53400-000">
+</div>
+<div>
+<label for="destination">CEP de destino</label>
+<input id="destination" inputmode="numeric" maxlength="9" placeholder="Ex.: 50000-000">
+</div>
+</div>
+<div class="actions">
+<button id="oneBtn" onclick="singleQuery()">Calcular distância</button>
+<button class="secondary" onclick="clearOne()">Limpar</button>
+</div>
 <div id="oneStatus" class="status" aria-live="polite"></div>
 <div id="oneResult"></div>
 </section>
+
 <section class="panel">
-<h2>2. Consulta em lote</h2>
+<h2>2. Consulta em lote de CEPs</h2>
 <label for="batchOrigin">CEP de origem (comum a todos os destinos)</label>
 <input id="batchOrigin" inputmode="numeric" maxlength="9" placeholder="Ex.: 53400-000">
 <div style="height:12px"></div>
 <label for="destinations">CEPs de destino</label>
 <textarea id="destinations" placeholder="Digite um CEP por linha ou separados por vírgula/ponto e vírgula&#10;50000-000&#10;58000-000&#10;57000-000"></textarea>
-<div class="hint">Para respeitar os serviços gratuitos, o sistema consulta um destino por vez. Recomendado: até 20 CEPs por lote.</div>
-<div class="actions"><button id="batchBtn" onclick="batchQuery()">Calcular lote</button><button class="secondary" onclick="exportCsv()">Exportar Excel/CSV</button><button class="secondary" onclick="clearBatch()">Limpar</button></div>
+<div class="hint">Recomendado: até 20 CEPs por lote. As consultas são feitas em sequência para respeitar os serviços gratuitos.</div>
+<div class="actions">
+<button id="batchBtn" onclick="batchQuery()">Calcular lote</button>
+<button class="secondary" onclick="exportCsv()">Exportar Excel/CSV</button>
+<button class="secondary" onclick="clearBatch()">Limpar</button>
+</div>
 <div id="batchStatus" class="status" aria-live="polite"></div>
 <div id="batchResults" class="result"></div>
 </section>
+
+<section class="panel">
+<h2>3. Consulta entre cidades</h2>
+<div class="grid">
+<div>
+<label for="cityOrigin">Cidade de origem</label>
+<input id="cityOrigin" placeholder="Ex.: Abreu e Lima">
+</div>
+<div>
+<label for="stateOrigin">Estado de origem (UF)</label>
+<select id="stateOrigin">
+<option value="">Selecione</option>
+</select>
+</div>
+<div>
+<label for="cityDestination">Cidade de destino</label>
+<input id="cityDestination" placeholder="Ex.: João Pessoa">
+</div>
+<div>
+<label for="stateDestination">Estado de destino (UF)</label>
+<select id="stateDestination">
+<option value="">Selecione</option>
+</select>
+</div>
+</div>
+<div class="actions">
+<button id="cityBtn" onclick="cityQuery()">Calcular distância entre cidades</button>
+<button class="secondary" onclick="clearCity()">Limpar</button>
+</div>
+<div id="cityStatus" class="status" aria-live="polite"></div>
+<div id="cityResult"></div>
+</section>
+
+<section class="panel">
+<h2>4. Exportar resultados</h2>
+<p>As consultas individuais, por cidade e em lote ficam disponíveis para exportação neste arquivo.</p>
+<div class="actions">
+<button class="secondary" onclick="exportAll()">Exportar todos os resultados para Excel/CSV</button>
+</div>
+<div id="exportStatus" class="status"></div>
+</section>
+
 <section class="panel">
 <h2>Como o cálculo funciona</h2>
 <ul>
 <li>O CEP é consultado no ViaCEP para obter o endereço.</li>
-<li>O endereço é geocodificado no OpenStreetMap/Nominatim.</li>
+<li>As cidades e endereços são localizados no OpenStreetMap/Nominatim.</li>
 <li>O OSRM calcula a rota rodoviária entre os pontos encontrados.</li>
 </ul>
-<p class="note">A distância é uma estimativa baseada no ponto geográfico localizado para o endereço do CEP; não representa necessariamente o portão exato do imóvel ou o percurso de um caminhão. Restrições de circulação, pedágios, tipo de veículo, trânsito e condições das vias não são considerados.</p>
-<p class="note">Este protótipo usa serviços públicos gratuitos, sem garantia de disponibilidade. Consulte os termos de uso antes de uso comercial intenso. As consultas são sequenciais e com intervalo para reduzir a carga nos serviços.</p>
+<p class="note">A distância é estimada a partir do ponto geográfico localizado. Não representa necessariamente o portão exato do imóvel ou o percurso de um caminhão. Restrições de circulação, pedágios, tipo de veículo, trânsito e condições das vias não são considerados.</p>
+<p class="note">Este protótipo utiliza serviços públicos gratuitos, sem garantia de disponibilidade. Para uso comercial intenso, consulte os termos de uso ou considere contratar um serviço de mapas e rotas.</p>
 </section>
+
 </main>
-<footer>Ferramenta independente • Dados de endereço: ViaCEP • Mapas e rotas: OpenStreetMap / OSRM</footer>
+
+<footer>Ferramenta independente • Endereços: ViaCEP • Mapas e rotas: OpenStreetMap / OSRM</footer>
+
 <script>
 const $=id=>document.getElementById(id);
 let batchRows=[];
-const wait=ms=>new Promise(r=>setTimeout(r,ms));
+let allRows=[];
+let lastOriginPoint=null;
+let lastOriginAddress=null;
+
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function digits(s){return (s||'').replace(/\D/g,'')}
-function fmtCep(s){const d=digits(s);return d.length===8?d.slice(0,5)+'-'+d.slice(5):s}
-function setStatus(id,msg,cls=''){const e=$(id);e.className='status '+cls;e.textContent=msg}
+function fmtCep(s){
+ const d=digits(s);
+ return d.length===8?d.slice(0,5)+'-'+d.slice(5):s;
+}
+function setStatus(id,msg,cls=''){
+ const e=$(id);
+ e.className='status '+cls;
+ e.textContent=msg;
+}
+function escapeHtml(s){
+ return String(s??'').replace(/[&<>"']/g,c=>({
+ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+ }[c]));
+}
+
+const states=[
+'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS',
+'MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC',
+'SP','SE','TO'
+];
+
+function fillStates(){
+ ['stateOrigin','stateDestination'].forEach(id=>{
+  states.forEach(uf=>{
+   const option=document.createElement('option');
+   option.value=uf;
+   option.textContent=uf;
+   $(id).appendChild(option);
+  });
+ });
+}
+fillStates();
+
 async function getAddress(cep){
- const d=digits(cep);if(d.length!==8)throw Error('Informe um CEP válido com 8 dígitos.');
+ const d=digits(cep);
+ if(d.length!==8)throw Error('Informe um CEP válido com 8 dígitos.');
+
  const r=await fetch('https://viacep.com.br/ws/'+d+'/json/');
  if(!r.ok)throw Error('Não foi possível consultar o ViaCEP.');
- const a=await r.json();if(a.erro)throw Error('CEP não encontrado.');
+
+ const a=await r.json();
+ if(a.erro)throw Error('CEP não encontrado.');
+
  const parts=[a.logradouro,a.bairro,a.localidade,a.uf,'Brasil'].filter(Boolean);
- return {cep:fmtCep(d),street:a.logradouro||'',neighborhood:a.bairro||'',city:a.localidade||'',state:a.uf||'',label:parts.join(', ')};
+
+ return {
+  cep:fmtCep(d),
+  street:a.logradouro||'',
+  neighborhood:a.bairro||'',
+  city:a.localidade||'',
+  state:a.uf||'',
+  label:parts.join(', ')
+ };
 }
-const cacheKey=s=>'geo:'+s.toLowerCase();
-async function geocode(addr){
- const key=cacheKey(addr);try{const c=localStorage.getItem(key);if(c)return JSON.parse(c)}catch(e){}
- const url='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&country=Brasil&q='+encodeURIComponent(addr);
+
+const cacheKey=s=>'geo-v2:'+s.toLowerCase().trim();
+
+async function geocode(query){
+ const key=cacheKey(query);
+
+ try{
+  const cached=localStorage.getItem(key);
+  if(cached)return JSON.parse(cached);
+ }catch(e){}
+
+ const params=new URLSearchParams({
+  format:'jsonv2',
+  limit:'1',
+  countrycodes:'br',
+  q:query
+ });
+
+ const url='https://nominatim.openstreetmap.org/search?'+params.toString();
+
  const r=await fetch(url,{headers:{'Accept-Language':'pt-BR'}});
- if(!r.ok)throw Error('Serviço de localização indisponível (HTTP '+r.status+'). Tente novamente mais tarde.');
- const arr=await r.json();if(!arr.length)throw Error('Não foi possível localizar este endereço no mapa.');
- const p={lat:Number(arr[0].lat),lon:Number(arr[0].lon),display:arr[0].display_name};
+
+ if(!r.ok){
+  throw Error('Serviço de localização indisponível (HTTP '+r.status+'). Tente novamente mais tarde.');
+ }
+
+ const arr=await r.json();
+
+ if(!arr.length){
+  throw Error('Não foi possível localizar este endereço. Confira o CEP ou o nome da cidade e UF.');
+ }
+
+ const p={
+  lat:Number(arr[0].lat),
+  lon:Number(arr[0].lon),
+  display:arr[0].display_name
+ };
+
  try{localStorage.setItem(key,JSON.stringify(p))}catch(e){}
+
  return p;
 }
+
 async function route(a,b){
- const url=`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false&steps=false`;
- const r=await fetch(url);if(!r.ok)throw Error('Serviço de rotas indisponível (HTTP '+r.status+').');
- const j=await r.json();if(j.code!=='Ok'||!j.routes?.length)throw Error('Não foi encontrada rota rodoviária entre os pontos.');
- return {km:j.routes[0].distance/1000,minutes:j.routes[0].duration/60};
+ const url=https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false&steps=false;
+
+ const r=await fetch(url);
+
+ if(!r.ok)throw Error('Serviço de rotas indisponível (HTTP '+r.status+').');
+
+ const j=await r.json();
+
+ if(j.code!=='Ok'||!j.routes?.length){
+  throw Error('Não foi encontrada rota rodoviária entre os pontos.');
+ }
+
+ return {
+  km:j.routes[0].distance/1000,
+  minutes:j.routes[0].duration/60
+ };
 }
+
+function addressText(a){
+ return [a.street,a.neighborhood,a.city,a.state].filter(Boolean).join(', ');
+}
+
+function formatTime(minutes){
+ const h=Math.floor(minutes/60);
+ const m=Math.round(minutes%60);
+ return h+'h '+m+'min';
+}
+
 async function calculate(from,to){
- const [a,b]=await Promise.all([getAddress(from),getAddress(to)]);
- // Nominatim public service: keep requests sequential and spaced.
- const ga=await geocode(a.label);await wait(1100);const gb=await geocode(b.label);
+ const [a,b]=await Promise.all([
+  getAddress(from),
+  getAddress(to)
+ ]);
+
+ const ga=await geocode(a.label);
+ await wait(1100);
+ const gb=await geocode(b.label);
+
  const rt=await route(ga,gb);
- return {from:a,to:b,km:rt.km,minutes:rt.minutes};
+
+ return {
+  from:a,
+  to:b,
+  km:rt.km,
+  minutes:rt.minutes,
+  tipo:'CEP'
+ };
 }
-function addressText(a){return [a.street,a.neighborhood,a.city,a.state].filter(Boolean).join(', ')}
-function resultHtml(x){return `<div class="kpis"><div class="kpi"><b>${x.km.toFixed(1).replace('.',',')} km</b><span>Distância rodoviária estimada</span></div><div class="kpi"><b>${Math.round(x.minutes/60)}h ${Math.round(x.minutes%60)}min</b><span>Tempo estimado de direção</span></div><div class="kpi"><b>${x.from.cep} → ${x.to.cep}</b><span>Origem e destino</span></div></div><p><b>Origem:</b> ${escapeHtml(addressText(x.from))}<br><b>Destino:</b> ${escapeHtml(addressText(x.to))}</p><span class="pill">Rota calculada</span>`}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function resultHtml(x){
+ return `
+ <div class="kpis">
+  <div class="kpi"><b>${x.km.toFixed(1).replace('.',',')} km</b><span>Distância rodoviária estimada</span></div>
+  <div class="kpi"><b>${formatTime(x.minutes)}</b><span>Tempo estimado de direção</span></div>
+  <div class="kpi"><b>${escapeHtml(x.from.cep||x.from.city)} → ${escapeHtml(x.to.cep||x.to.city)}</b><span>Origem e destino</span></div>
+ </div>
+ <p><b>Origem:</b> ${escapeHtml(x.from.label||addressText(x.from))}<br>
+ <b>Destino:</b> ${escapeHtml(x.to.label||addressText(x.to))}</p>
+ <span class="pill">Rota calculada</span>`;
+}
+
+function saveResult(x){
+ allRows.push({
+  tipo:x.tipo||'CEP',
+  origem:x.from.label||addressText(x.from)||x.from.cep||x.from.city,
+  destino:x.to.label||addressText(x.to)||x.to.cep||x.to.city,
+  distancia_km:x.km.toFixed(1).replace('.',','),
+  tempo_estimado:formatTime(x.minutes),
+  status:'OK'
+ });
+}
+
 async function singleQuery(){
- const o=$('origin').value,d=$('destination').value;
- $('oneBtn').disabled=true;$('oneResult').innerHTML='';
- try{setStatus('oneStatus','Consultando CEPs e calculando a rota...');const x=await calculate(o,d);$('oneResult').innerHTML=resultHtml(x);setStatus('oneStatus','Consulta concluída.','ok')}
- catch(e){setStatus('oneStatus',e.message,'error')}finally{$('oneBtn').disabled=false}
+ const o=$('origin').value;
+ const d=$('destination').value;
+
+ $('oneBtn').disabled=true;
+ $('oneResult').innerHTML='';
+
+ try{
+  setStatus('oneStatus','Consultando CEPs e calculando a rota...');
+  const x=await calculate(o,d);
+  $('oneResult').innerHTML=resultHtml(x);
+  saveResult(x);
+  setStatus('oneStatus','Consulta concluída.','ok');
+ }catch(e){
+  setStatus('oneStatus',e.message,'error');
+ }finally{
+  $('oneBtn').disabled=false;
+ }
 }
-function clearOne(){$('origin').value='';$('destination').value='';$('oneResult').innerHTML='';setStatus('oneStatus','')}
-function clearBatch(){$('batchOrigin').value='';$('destinations').value='';$('batchResults').innerHTML='';batchRows=[];setStatus('batchStatus','')}
+
+function clearOne(){
+ $('origin').value='';
+ $('destination').value='';
+ $('oneResult').innerHTML='';
+ setStatus('oneStatus','');
+}
+
+function clearBatch(){
+ $('batchOrigin').value='';
+ $('destinations').value='';
+ $('batchResults').innerHTML='';
+ batchRows=[];
+ setStatus('batchStatus','');
+}
+
 async function batchQuery(){
  const o=$('batchOrigin').value;
- const ds=[...new Set($('destinations').value.split(/[\n,;]+/).map(s=>digits(s.trim())).filter(Boolean))];
- if(ds.some(d=>d.length!==8)){setStatus('batchStatus','Há CEP(s) inválido(s). Cada CEP deve conter 8 dígitos.','error');return}
- if(!ds.length){setStatus('batchStatus','Informe ao menos um CEP de destino.','error');return}
- if(ds.length>20){setStatus('batchStatus','Limite de 20 CEPs por lote nesta versão.','error');return}
- $('batchBtn').disabled=true;batchRows=[];$('batchResults').innerHTML='';
- for(let i=0;i<ds.length;i++){
-  setStatus('batchStatus',`Processando ${i+1} de ${ds.length}: ${fmtCep(ds[i])}...`);
-  try{const x=await calculate(o,ds[i]);batchRows.push({origem:x.from.cep,destino:x.to.cep,endereco_origem:addressText(x.from),endereco_destino:addressText(x.to),distancia_km:x.km.toFixed(1).replace('.',','),tempo_estimado:Math.round(x.minutes)+' min',status:'OK'})}
-  catch(e){batchRows.push({origem:fmtCep(o),destino:fmtCep(ds[i]),endereco_origem:'',endereco_destino:'',distancia_km:'',tempo_estimado:'',status:e.message})}
-  renderBatch();
-  if(i<ds.length-1)await wait(1200);
+ const ds=[...new Set(
+  $('destinations').value.split(/[\n,;]+/)
+  .map(s=>digits(s.trim())).filter(Boolean)
+ )];
+
+ if(digits(o).length!==8){
+  setStatus('batchStatus','Informe um CEP de origem válido.','error');
+  return;
  }
- const ok=batchRows.filter(x=>x.status==='OK').length;
- setStatus('batchStatus',`Concluído: ${ok} de ${ds.length} rota(s) calculada(s). Você pode exportar o resultado.`,'ok');
- $('batchBtn').disabled=false;
+
+ if(ds.some(d=>d.length!==8)){
+  setStatus('batchStatus','Há CEP(s) inválido(s). Cada CEP deve conter 8 dígitos.','error');
+  return;
+ }
+
+ if(!ds.length){
+  setStatus('batchStatus','Informe ao menos um CEP de destino.','error');
+  return;
+ }
+
+ if(ds.length>20){
+  setStatus('batchStatus','Limite de 20 CEPs por lote nesta versão.','error');
+  return;
+ }
+
+ $('batchBtn').disabled=true;
+ batchRows=[];
+ $('batchResults').innerHTML='';
+
+ try{
+  setStatus('batchStatus','Localizando o endereço de origem...');
+  lastOriginAddress=await getAddress(o);
+  lastOriginPoint=await geocode(lastOriginAddress.label);
+
+  for(let i=0;i<ds.length;i++){
+   setStatus('batchStatus',Processando ${i+1} de ${ds.length}: ${fmtCep(ds[i])}...);
+
+   try{
+    const dest=await getAddress(ds[i]);
+    await wait(1100);
+    const destPoint=await geocode(dest.label);
+    const rt=await route(lastOriginPoint,destPoint);
+
+    const x={
+     from:lastOriginAddress,
+     to:dest,
+     km:rt.km,
+     minutes:rt.minutes,
+     tipo:'Lote CEP'
+    };
+
+    batchRows.push({
+     origem:lastOriginAddress.cep,
+     destino:dest.cep,
+     endereco_origem:addressText(lastOriginAddress),
+     endereco_destino:addressText(dest),
+     distancia_km:rt.km.toFixed(1).replace('.',','),
+     tempo_estimado:formatTime(rt.minutes),
+     status:'OK'
+    });
+
+    saveResult(x);
+
+   }catch(e){
+    batchRows.push({
+     origem:fmtCep(o),
+     destino:fmtCep(ds[i]),
+     endereco_origem:'',
+     endereco_destino:'',
+     distancia_km:'',
+     tempo_estimado:'',
+     status:e.message
+    });
+   }
+
+   renderBatch();
+
+   if(i<ds.length-1)await wait(1100);
+  }
+
+  const ok=batchRows.filter(x=>x.status==='OK').length;
+  setStatus('batchStatus',Concluído: ${ok} de ${ds.length} rota(s) calculada(s).,'ok');
+
+ }catch(e){
+  setStatus('batchStatus',e.message,'error');
+ }finally{
+  $('batchBtn').disabled=false;
+ }
 }
+
 function renderBatch(){
- const rows=batchRows.map(x=>`<tr><td>${escapeHtml(x.origem)}</td><td>${escapeHtml(x.destino)}</td><td>${escapeHtml(x.endereco_destino)}</td><td>${escapeHtml(x.distancia_km?x.distancia_km+' km':'—')}</td><td>${escapeHtml(x.tempo_estimado||'—')}</td><td>${escapeHtml(x.status)}</td></tr>`).join('');
- $('batchResults').innerHTML=`<table><thead><tr><th>Origem</th><th>Destino</th><th>Endereço de destino</th><th>Distância</th><th>Tempo estimado</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
+ const rows=batchRows.map(x=>`
+ <tr>
+  <td>${escapeHtml(x.origem)}</td>
+  <td>${escapeHtml(x.destino)}</td>
+  <td>${escapeHtml(x.endereco_destino)}</td>
+  <td>${escapeHtml(x.distancia_km?x.distancia_km+' km':'—')}</td>
+  <td>${escapeHtml(x.tempo_estimado||'—')}</td>
+  <td>${escapeHtml(x.status)}</td>
+ </tr>`).join('');
+
+ $('batchResults').innerHTML=`
+ <table>
+ <thead><tr>
+ <th>Origem</th><th>Destino</th><th>Endereço de destino</th>
+ <th>Distância</th><th>Tempo estimado</th><th>Status</th>
+ </tr></thead>
+ <tbody>${rows}</tbody>
+ </table>`;
 }
+
+async function cityQuery(){
+ const cityO=$('cityOrigin').value.trim();
+ const ufO=$('stateOrigin').value;
+ const cityD=$('cityDestination').value.trim();
+ const ufD=$('stateDestination').value;
+
+ if(!cityO||!ufO||!cityD||!ufD){
+  setStatus('cityStatus','Informe as duas cidades e selecione os respectivos estados.','error');
+  return;
+ }
+
+ $('cityBtn').disabled=true;
+ $('cityResult').innerHTML='';
+
+ try{
+  setStatus('cityStatus','Localizando as cidades no mapa...');
+
+  const originText=${cityO}, ${ufO}, Brasil;
+  const destText=${cityD}, ${ufD}, Brasil;
+
+  const go=await geocode(originText);
+  await wait(1100);
+  const gd=await geocode(destText);
+
+  setStatus('cityStatus','Calculando a rota rodoviária...');
+
+  const rt=await route(go,gd);
+
+  const x={
+   from:{city:cityO+'/'+ufO,label:originText},
+   to:{city:cityD+'/'+ufD,label:destText},
+   km:rt.km,
+   minutes:rt.minutes,
+   tipo:'Cidades'
+  };
+
+  $('cityResult').innerHTML=resultHtml(x);
+  saveResult(x);
+
+  setStatus('cityStatus','Consulta concluída.','ok');
+
+ }catch(e){
+  setStatus('cityStatus',e.message,'error');
+ }finally{
+  $('cityBtn').disabled=false;
+ }
+}
+
+function clearCity(){
+ $('cityOrigin').value='';
+ $('stateOrigin').value='';
+ $('cityDestination').value='';
+ $('stateDestination').value='';
+ $('cityResult').innerHTML='';
+ setStatus('cityStatus','');
+}
+
+function downloadCsv(rows,filename){
+ if(!rows.length){
+  setStatus('exportStatus','Não há resultados para exportar.','error');
+  return;
+ }
+
+ const headers=Object.keys(rows[0]);
+ const csv=[
+  headers.join(';'),
+  ...rows.map(r=>headers.map(h=>
+   '"'+String(r[h]??'').replace(/"/g,'""')+'"'
+  ).join(';'))
+ ].join('\r\n');
+
+ const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+
+ a.href=url;
+ a.download=filename;
+ document.body.appendChild(a);
+ a.click();
+ a.remove();
+
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+ setStatus('exportStatus','Arquivo gerado. Abra no Excel ou WPS Office.','ok');
+}
+
 function exportCsv(){
- if(!batchRows.length){setStatus('batchStatus','Faça uma consulta em lote antes de exportar.','error');return}
- const headers=['origem','destino','endereco_origem','endereco_destino','distancia_km','tempo_estimado','status'];
- const csv=[headers.join(';'),...batchRows.map(r=>headers.map(h=>'"'+String(r[h]??'').replace(/"/g,'""')+'"').join(';'))].join('\r\n');
- const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
- a.href=url;a.download='consulta_distancia_ceps.csv';a.click();URL.revokeObjectURL(url);
+ downloadCsv(batchRows,'consulta_lote_ceps.csv');
+}
+
+function exportAll(){
+ downloadCsv(allRows,'consulta_completa_distancias.csv');
 }
 </script>
-</body></html>
+</body>
+</html>
